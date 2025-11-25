@@ -1,0 +1,90 @@
+load "medit";
+int gamma0 = 1;
+int gammaD = 2;
+int gammaN = 3;
+
+real h = 0.4; // 0.4m
+real l = 1.7; // 1.7m
+real r = 0.35; // 0.35m
+real p = 0.5;
+
+real e = 0.1;
+
+real Y0 = h + r-e; 
+real L0 = l - 2*r;
+real R0 = r - e;
+
+
+border C01(t=-1, 1){x=L0*t/2.; y=0; label=gamma0;};
+border C02(t=1, -1){x=L0*t/2.; y=e; label=gammaN;};
+
+border C03(t=pi/2., 0){x=L0/2. + R0*cos(t); y=-R0 + R0*sin(t); label=gamma0;};
+border C05(t=0, pi/2.){x=L0/2. + r*cos(t); y=-R0 + r*sin(t); label=gamma0;};
+border C04(t=pi, pi/2.){x=-L0/2. + R0*cos(t); y=-R0 + R0*sin(t); label=gamma0;};
+border C06(t=pi/2., pi){x=-L0/2. + r*cos(t); y=-R0 + r*sin(t); label=gamma0;};
+
+border C07(t=0, 1){x=l/2-e; y=-R0-t*h; label=gamma0;};
+border C08(t=0, 1){x=l/2-e + t*e; y=-R0-h; label=gammaD;};
+border C09(t=0, 1){x=l/2; y=-R0-h+t*h; label=gamma0;};
+border C10(t=1, 0){x=-l/2+e; y=-R0-t*h; label=gamma0;};
+border C11(t=1, 0){x=-l/2+e - t*e; y=-R0-h; label=gammaD;};
+border C12(t=1, 0){x=-l/2; y=-R0-h+t*h; label=gamma0;};
+
+int n = 10;
+
+mesh Th0 = buildmesh(
+    C01(n) + C02(n) + C03(n) + C04(n) + C05(n) + C06(n) +
+    C07(n) + C08(n) + C09(n) +
+    C10(n) + C11(n) + C12(n)
+);
+func f = 1;
+Th0 = adaptmesh(Th0, f);
+
+int[int] lup = [0, gamma0];
+mesh3 Th1 = buildlayers(
+    Th0,
+    n,
+    zbound=[0, p],
+    labelup=lup,
+    labeldown=lup
+);
+
+mesh3 Th3d = movemesh3(
+    Th1,
+    transfo = ([x, z, y])
+);
+
+
+// Fespace
+
+fespace Vh(Th3d, P1);
+Vh u, v;
+Vh uu, vv;
+
+real sqrt2=sqrt(2.);
+macro epsilon(u1,u2) [dx(u1),dy(u2),(dy(u1)+dx(u2))/sqrt2] //
+macro div(u,v) (dx(u) + dy(v)) //
+
+// Problem
+real E = 2.1 * 10^11;
+real nu = 0.3;
+
+real mu = E/(2*(1+nu));
+real lambda = E*nu/((1+nu)*(1-2*nu));
+
+solve lame([u, v], [uu, vv])
+    = int2d(Th3d)(
+        lambda * div(u, v) * div(uu, vv)
+        + 2.*mu * ( epsilon(u,v)' * epsilon(uu,vv) )
+    ) - int2d(Th3d)(
+        f*vv
+    ) + on(4, u=0, v=0);
+
+// Move mesh
+
+real coef=100;
+mesh th1 = movemesh(Th3d, [x+u*coef, y+v*coef, z]);
+plot(th1,wait=1,ps="lamedeform.eps");
+
+//medit("mesh", Th3d);
+cout << "   dep. (0, 0) = " << u(0, 0, 0) << " " << v(0, 0, 0) << endl;

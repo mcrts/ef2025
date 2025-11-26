@@ -1,26 +1,21 @@
 load "medit";
+load "iovtk";
+include "utils.edp";
 
-mesh3 Th = readmesh3("labeled.mesh");
+real e = 0.34;
 
-// BEGIN: PARAM
-real h = 0.4; // 0.4m
-real l = 1.7; // 1.7m
-real r = 0.35; // 0.35m
-real pz = 0.5;
+mesh3 Th = genmesh(e);
+//medit("mesh", Th);
+
+int gamma0 = 1;
+int gammaD = 2;
+int gammaN = 3;
+
 real rho = 7800; // 7800 kg/m3
 real gz = -9.81; 
 real t0z = -5 * 10^8; //
 real fv = rho*gz;
 
-real e = 0.1;
-// END: PARAM
-
-// BEGIN: MESH
-int gamma0 = 1;
-int gammaD = 2;
-int gammaN = 3;
-
-// BEGIN: EDP
 real E = 2.1 * 10^11;
 real nu = 0.3;
 real mu = E/(2*(1+nu));
@@ -46,16 +41,14 @@ problem Lame([ux, uy, uz], [vx, vy, vz])
 
 Lame;
 
-// Output
 real dzmax = uz[].max;
-cout << " - dep. max z = "<< dzmax << endl;
-cout << "   dep. (0, 0, 0) = " << uz(0, 0, 0) << endl;
+cout << "  ***** RESULT ***** " << endl;
+cout << " - max z = "<< dzmax << endl;
+cout << " - dep. (0, 0, 0) = " << uz(0, 0, 0) << endl;
+cout << "  ***** RESULT ***** " << endl;
 
-
-// Viz
 real coef=1;
-mesh3 thmoved = movemesh(Th, [x+ux*coef, y+uy*coef, z+uz*coef]);
+mesh3 Thmoved = movemesh(Th, [x+ux*coef, y+uy*coef, z+uz*coef]);
 
-load "iovtk"
 savevtk("output.vtk", Th, [ux, uy, uz], dataname="u");
-savevtk("output_move.vtk", thmoved, [ux, uy, uz], dataname="u");
+savevtk("output_moved.vtk", Thmoved, [ux, uy, uz], dataname="u");

@@ -1,6 +1,91 @@
-// Definir une func
+load "medit";
+include "utils.edp";
 
-func mesh gen()
-{
+real EMIN = 0.01;
+real EMAX = 0.34;
+real TOL = 0.01; 
+
+real TARGET = 0.27;
+
+real a = EMIN;
+real b = EMAX;
+real m = (a + b)/2.;
+
+while ((b - a - TOL) > 0) {
+    m = (a + b)/2.;
+    cout << "<a=" + a + "; b=" + b + "; m=" + m + "; (b-a)= " + (b-a) + ">" << endl;
+
     
+    mesh3 Th = genmesh(m);
+    string fname = "meshdir/labeled_" + m + ".mesh";
+    medit(fname, Th);
+    savemesh(Th, fname);
+
+    if (m <= TARGET) {
+        a = m;
+    } else {
+        b = m;
+    }
 }
+
+/*
+// BEGIN: PARAM
+real h = 0.4; // 0.4m
+real l = 1.7; // 1.7m
+real r = 0.35; // 0.35m
+real pz = 0.5;
+
+
+// END: PARAM
+
+// BEGIN: MESH
+int gamma0 = 1;
+int gammaD = 2;
+int gammaN = 3;
+
+// BEGIN: EDP
+real rho = 7800; // 7800 kg/m3
+real gz = -9.81; 
+real t0z = -5 * 10^8; //
+real fv = rho*gz;
+
+real E = 2.1 * 10^11;
+real nu = 0.3;
+real mu = E/(2*(1+nu));
+real lambda = E*nu/((1+nu)*(1-2*nu));
+
+fespace Vh(Th, P2);
+Vh ux, uy, uz;
+Vh vx, vy, vz;
+
+real sq2=sqrt(2.);
+macro epsilon(u1,u2,u3) [dx(u1), dy(u2), dz(u3), (dy(u1) + dx(u2))/sq2, (dz(u1) + dx(u3))/sq2, (dy(u3) + dz(u2))/sq2] //
+macro div(u1, u2, u3) (dx(u1) + dy(u2) + dz(u3)) //
+
+problem Lame([ux, uy, uz], [vx, vy, vz])
+    = int3d(Th)(
+        lambda*div(ux, uy, uz)*div(vx, vy, vz) + 2.*mu*(epsilon(ux, uy, uz)' * epsilon(vx, vy, vz))
+    ) - int3d(Th)(
+        fv*vz
+    ) - int2d(Th, gammaN)(
+        t0z*vz
+    )
+    + on(gammaD, ux=0, uy=0, uz=0); // dirichlet
+
+Lame;
+
+// Output
+real dzmax = uz[].max;
+cout << " - dep. max z = "<< dzmax << endl;
+cout << "   dep. (0, 0, 0) = " << uz(0, 0, 0) << endl;
+
+
+// Viz
+real coef=1;
+mesh3 thmoved = movemesh(Th, [x+ux*coef, y+uy*coef, z+uz*coef]);
+
+load "iovtk"
+savevtk("output.vtk", Th, [ux, uy, uz], dataname="u");
+savevtk("output_move.vtk", thmoved, [ux, uy, uz], dataname="u");
+
+*/

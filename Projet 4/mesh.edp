@@ -37,66 +37,25 @@ border C11(t=1, 0){x=-l/2+e - t*e; y=-R0-h; label=gammaD;};
 border C12(t=1, 0){x=-l/2; y=-R0-h+t*h; label=gamma0;};
 
 int n = 10;
-mesh Th0 = buildmesh(
-    C01(n) + C02(n) + C03(n) + C04(n) + C05(n) + C06(n) +
-    C07(n) + C08(n) + C09(n) +
-    C10(n) + C11(n) + C12(n)
-);
-func w = 1;
-Th0 = adaptmesh(Th0, w, hmin=0.01, hmax=0.01);
+macro CUMPOSITEBORDER(t) (C01(t) + C02(t) + C03(t) + C04(t) + C05(t) + C06(t) + C07(t) + C08(t) + C09(t) + C10(t) + C11(t) + C12(t))//
+mesh Th0 = buildmesh(CUMPOSITEBORDER(n));
 
+Th0 = adaptmesh(Th0, 1./30., IsMetric=1, nbvx=10000);
+
+int nz = 20;
 int[int] lup = [0, gamma0];
 mesh3 Th1 = buildlayers(
     Th0,
-    n,
+    nz,
     zbound=[0, pz],
     labelup=lup,
     labeldown=lup
 );
 mesh3 Th = movemesh3(
     Th1,
-    transfo = ([x, z, y])
+    transfo=[x, z, y],
+    orientation=-1
 );
+
 medit("mesh", Th);
-// END: MESH
-
-// BEGIN: EDP
-real E = 2.1 * 10^11;
-real nu = 0.3;
-real mu = E/(2*(1+nu));
-real lambda = E*nu/((1+nu)*(1-2*nu));
-
-fespace Vh(Th, P1);
-Vh ux, uy, uz;
-Vh vx, vy, vz;
-
-
-real sq2=sqrt(2.);
-macro epsilon(u1,u2,u3) [dx(u1), dy(u2), dz(u3), (dy(u1) + dx(u2))/sq2, (dz(u1) + dx(u3))/sq2, (dy(u3) + dz(u2))/sq2] //
-macro div(u1, u2, u3) (dx(u1) + dy(u2) + dz(u3)) //
-
-problem Lame([ux, uy, uz], [vx, vy, vz])
-    = int3d(Th)(
-        lambda*div(ux, uy, uz)*div(vx, vy, vz) + 2.*mu*(epsilon(ux, uy, uz)' * epsilon(vx, vy, vz))
-    ) - int3d(Th)(
-        - fv*vz
-    ) - int2d(Th, gammaN)(
-        t0z*vz
-    )
-    + on(gammaD, ux=0, uy=0, uz=0); // dirichlet
-
-Lame;
-
-// Output
-real dzmax = uz[].max;
-cout << " - dep. max z = "<< dzmax << endl;
-cout << "   dep. (0, 0, 0) = " << uz(0, 0, 0) << endl;
-
-
-// Viz
-real coef=3;
-mesh3 thmoved = movemesh(Th, [x+ux*coef, y+uy*coef, z+uz*coef]);
-
-load "iovtk"
-savevtk("output.vtk", Th, [ux, uy, uz], dataname="u");
-savevtk("output_move.vtk", thmoved, [ux, uy, uz], dataname="u");
+savemesh(Th, "labeled.mesh");

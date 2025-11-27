@@ -2,16 +2,10 @@ load "medit";
 load "iovtk";
 include "utils.edp";
 
-string I = "09";
-real e = 0.091125;
+real e = 0.075;
 real ZMAX = 0.4 + 0.35 - e;
 
-string fmesh = "iteration_" + I + "/mesh.mesh";
-string foutput = "iteration_" + I + "/solution.vtk";
-string foutputmoved = "iteration_" + I + "/solution_moved.vtk";
-
 mesh3 Th = genmesh(e);
-savemesh(Th, fmesh);
 
 int gamma0 = 1;
 int gammaD = 2;
@@ -57,6 +51,3 @@ cout << "  ***** RESULT ***** " << endl;
 
 real coef=1;
 mesh3 Thmoved = movemesh(Th, [x+ux*coef, y+uy*coef, z+uz*coef]);
-
-savevtk(foutput, Th, [ux, uy, uz], dataname="u");
-savevtk(foutputmoved, Thmoved, [ux, uy, uz], dataname="u");

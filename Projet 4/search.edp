@@ -1,0 +1,31 @@
+load "medit";
+load "iovtk";
+include "utils.edp";
+
+real EMIN = 0.001;
+real EMAX= 0.349;
+real ZMAX = 0.1;
+real TOL = 0.0001;
+
+real a = EMIN;
+real b = EMAX;
+real m = (EMIN + EMAX) /2;
+real d = 10;
+
+while ((b-a)>TOL || d > ZMAX) {
+    m = (a + b) /2;
+
+    mesh3 Th = genmesh(m);
+    d = deflection(Th);
+
+    string s = "<a="+ a +"; b=" + b + "; m=" + m + "> : Uz(0, 0, 0)=" + d;
+    ofstream f("search.log", append);
+    f << s << endl;
+    
+    if (d <= ZMAX) {
+        b = m;
+    }
+    else {
+        a = m;
+    }
+}

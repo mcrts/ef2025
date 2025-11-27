@@ -2,9 +2,9 @@ load "medit";
 load "iovtk";
 include "utils.edp";
 
-string I = "09";
-real e = 0.091125;
-real ZMAX = 0.4 + 0.35 - e;
+string I = "00";
+real e = 0.170922;
+real ZMAX = -0.1;
 
 string fmesh = "iteration_" + I + "/mesh.mesh";
 string foutput = "iteration_" + I + "/solution.vtk";
@@ -49,9 +49,8 @@ Lame;
 
 real dzmax = uz[].min;
 cout << "  ***** RESULT ***** " << endl;
-cout << " - ZMAX adm = "<< ZMAX << endl;
-cout << " - dep. (0, 0, 0) = " << abs(uz(0, 0, 0)) << endl;
-cout << " - dep(0, 0, 0) <= ZMAX: " << (abs(uz(0, 0, 0)) <= ZMAX) << endl;
+cout << " - dep. (0, 0, 0) = " << uz(0, 0, 0) << endl;
+cout << " - dep(0, 0, 0) <= ZMAX: " << abs(uz(0, 0, 0)) <= abs(ZMAX) << endl;
 cout << " - max z = "<< dzmax << endl;
 cout << "  ***** RESULT ***** " << endl;
 

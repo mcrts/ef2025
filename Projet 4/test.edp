@@ -5,4 +5,5 @@ include "utils.edp";
 string fname = "mesh.mesh";
 real e = 0.2615;
 mesh3 Th = genmesh(e);
-medit("mesh", Th);
+real d = deflection(Th);
+cout << "RESULT: " << d << endl;

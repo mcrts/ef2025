@@ -6,9 +6,11 @@ string I = "";
 real e = 0.170327;
 real h = 0.1;
 
-string fmesh = "iteration_h_" + I + "/mesh.mesh";
-string foutput = "iteration_h_" + I + "/solution.vtk";
-string foutputmoved = "iteration_h_" + I + "/solution_moved.vtk";
+string folder = "test/";
+
+string fmesh = folder + "mesh.mesh";
+string foutput = folder + "solution.vtk";
+string foutputmoved = folder + "solution_moved.vtk";
 
 mesh3 Th = genmesh(e, h);
 savemesh(Th, fmesh);

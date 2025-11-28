@@ -2,15 +2,15 @@ load "medit";
 load "iovtk";
 include "utils.edp";
 
-string I = "0-1_P2";
 real e = 0.1;
-real ZMAX = -0.1;
+real h = 0.05;
+string folder = "test_run/";
 
-string fmesh = "iteration_" + I + "/mesh.mesh";
-string foutput = "iteration_" + I + "/solution.vtk";
-string foutputmoved = "iteration_" + I + "/solution_moved.vtk";
+string fmesh = folder + "mesh.mesh";
+string foutput = folder + "solution.vtk";
+string foutputmoved = folder + "solution_moved.vtk";
 
-mesh3 Th = genmesh(e);
+mesh3 Th = genmesh(e, h);
 savemesh(Th, fmesh);
 
 int gamma0 = 1;
@@ -50,7 +50,6 @@ Lame;
 real dzmax = uz[].min;
 cout << "  ***** RESULT ***** " << endl;
 cout << " - dep. (0, 0, 0) = " << uz(0, 0, 0) << endl;
-cout << " - dep(0, 0, 0) <= ZMAX: " << abs(uz(0, 0, 0)) <= abs(ZMAX) << endl;
 cout << " - max z = "<< dzmax << endl;
 cout << "  ***** RESULT ***** " << endl;
 

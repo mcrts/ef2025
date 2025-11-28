@@ -1,9 +1,62 @@
 load "medit";
 include "utils.edp";
+load "iovtk";
+
+real e = 0.170327;
+string fmesh = "iteration_symmetric/mesh.mesh";
+string foutput = "iteration_symmetric/solution.vtk";
+string foutputmoved = "iteration_symmetric/solution_moved.vtk";
+
+mesh3 Th = genmeshsym(e);
+savemesh(Th, fmesh);
+
+int gamma0 = 1;
+int gammaD1 = 2;
+int gammaD2 = 3;
+int gammaN = 4;
+
+real rho = 7800; // 7800 kg/m3
+real gz = -9.81; 
+real t0z = -5 * 10^8; //
+real fv = rho*gz;
+
+real E = 2.1 * 10^11;
+real nu = 0.3;
+real mu = E/(2*(1+nu));
+real lambda = E*nu/((1+nu)*(1-2*nu));
+
+fespace Vh(Th, P2);
+Vh ux, uy, uz;
+Vh vx, vy, vz;
+
+real sq2=sqrt(2.);
+macro epsilon(u1,u2,u3) [dx(u1), dy(u2), dz(u3), (dy(u1) + dx(u2))/sq2, (dz(u1) + dx(u3))/sq2, (dy(u3) + dz(u2))/sq2] //
+macro div(u1, u2, u3) (dx(u1) + dy(u2) + dz(u3)) //
+
+problem Lame([ux, uy, uz], [vx, vy, vz])
+    = int3d(Th)(
+        lambda*div(ux, uy, uz)*div(vx, vy, vz) + 2.*mu*(epsilon(ux, uy, uz)' * epsilon(vx, vy, vz))
+    ) - int3d(Th)(
+        fv*vz
+    ) - int2d(Th, gammaN)(
+        t0z*vz
+    )
+    + on(gammaD1, ux=0, uy=0, uz=0) // dirichlet
+    + on(gammaD2, ux=0); // dirichlet
+
+Lame;
 
 
-string fname = "mesh.mesh";
-real e = 0.2615;
-mesh3 Th = genmesh(e);
-real d = deflection(Th);
-cout << "RESULT: " << d << endl;
+medit("mesh", Th);
+
+real dzmax = uz[].min;
+cout << "  ***** RESULT ***** " << endl;
+cout << " - dep. (0, 0, 0) = " << uz(0, 0, 0) << endl;
+cout << " - max z = "<< dzmax << endl;
+cout << "  ***** RESULT ***** " << endl;
+
+real coef=1;
+mesh3 Thmoved = movemesh(Th, [x+ux*coef, y+uy*coef, z+uz*coef]);
+
+savevtk(foutput, Th, [ux, uy, uz], dataname="u");
+savevtk(foutputmoved, Thmoved, [ux, uy, uz], dataname="u");

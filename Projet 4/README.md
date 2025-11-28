@@ -29,7 +29,17 @@ Bound e [0.001, 0.349];
 <a=0.170242; b=0.170412; m=0.170327> : Uz(0, 0, 0)=0.0999336
 
 
-cas Symmetric
+# cas Symmetric
 
 e = 0.170327
 Uz(0, 0, 0) = -0.0999877
+
+# Varying H
+methode adaptmesh uniforme avec hmin = hmax = h.
+
+e = 0.1
+h | Uz
+0.5 | -0.470
+0.25 | -0.482078
+0.1 | -0.495276
+0.05 | -0.494969

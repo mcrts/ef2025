@@ -2,8 +2,8 @@ load "medit";
 load "iovtk";
 include "utils.edp";
 
-string I = "00";
-real e = 0.170922;
+string I = "0-1_P2";
+real e = 0.1;
 real ZMAX = -0.1;
 
 string fmesh = "iteration_" + I + "/mesh.mesh";

@@ -2,8 +2,8 @@ load "medit";
 load "iovtk";
 include "utils.edp";
 
-real e = 0.1;
-real h = 0.05;
+real e = 0.3;
+real h = 0.1;
 string folder = "test_run/";
 
 string fmesh = folder + "mesh.mesh";
